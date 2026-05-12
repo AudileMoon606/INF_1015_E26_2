@@ -1,0 +1,5 @@
+pomme	fruits et legumes	450	3.95
+fromage	produits laitiers	320	6.95
+aero	bonbons et chocolats	210	3.50
+poulet	viandes et substituts	55	7.28
+kraft dinner	produits cerealiers	300	4.25
