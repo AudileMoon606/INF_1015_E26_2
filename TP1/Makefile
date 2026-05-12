@@ -8,37 +8,43 @@ PROGRAMS := pb1 pb2 pb3 pb4 pb5
 
 all: $(PROGRAMS)
 
-pb1: $(SRC_DIR)/pb1.cpp
+pb1: pb1.cpp fonctions.cpp
+	$(CXX) $(CXXFLAGS) pb1.cpp fonctions.cpp -o $@
+
+
+pb2: pb2.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-pb2: $(SRC_DIR)/pb2.cpp
+pb3: pb3.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-pb3: $(SRC_DIR)/pb3.cpp
+pb4: pb4.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-pb4: $(SRC_DIR)/pb4.cpp
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-pb5: $(SRC_DIR)/pb5.cpp
+pb5: pb5.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 run-all: all $(addprefix run-,$(PROGRAMS))
 
 run-pb1: pb1
-	./pb1
+	pb1.exe
+	
 
 run-pb2: pb2
-	./pb2
+	pb2.exe
+	
 
 run-pb3: pb3
-	./pb3
+	pb3.exe
+	
 
 run-pb4: pb4
-	./pb4
+	pb4.exe
+	
 
 run-pb5: pb5
-	./pb5
+	pb5.exe
+	
 
 clean:
 	rm -f $(PROGRAMS)
