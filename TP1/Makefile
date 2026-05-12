@@ -12,8 +12,9 @@ pb1: pb1.cpp fonctions.cpp
 	$(CXX) $(CXXFLAGS) pb1.cpp fonctions.cpp -o $@
 
 
-pb2: pb2.cpp
-	$(CXX) $(CXXFLAGS) $< -o $@
+pb2: pb2.cpp fonctions.cpp
+	$(CXX) $(CXXFLAGS) pb2.cpp fonctions.cpp -o $@
+
 
 pb3: pb3.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@

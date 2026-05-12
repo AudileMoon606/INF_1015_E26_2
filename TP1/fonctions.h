@@ -16,6 +16,6 @@ using namespace std;
 
 // Déclaration de la fonction
 void maSuperFonction(); 
-int readInRange(const string& prompt, int min, int max)
+int readInRange(const string& prompt, int min, int max);
 
 #endif

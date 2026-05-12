@@ -12,6 +12,7 @@
 #include <ctime>
 #include <cmath>
 #include "fonctions.h"
+
 using namespace std;   
 
 int main (){
