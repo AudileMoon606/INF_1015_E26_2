@@ -1,51 +1,48 @@
 CXX := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic
+STD := -std=c++17
+WARNFLAGS := -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion \
+	-Wshadow -Wold-style-cast -Wcast-align -Wformat=2 -Wnull-dereference \
+	-Wdouble-promotion -Wimplicit-fallthrough -Woverloaded-virtual \
+	-Wnon-virtual-dtor -Wduplicated-cond -Wduplicated-branches -Wlogical-op \
+	-Wuseless-cast -Wmisleading-indentation
+DBGFLAGS := -g3 -ggdb -O0 -fno-omit-frame-pointer
+ENABLE_SANITIZERS ?= 0
+SANFLAGS :=
+ifeq ($(ENABLE_SANITIZERS),1)
+SANFLAGS := -fsanitize=address,undefined -fno-sanitize-recover=all
+endif
+CXXFLAGS := $(STD) $(WARNFLAGS) $(DBGFLAGS) $(SANFLAGS)
+LDFLAGS := $(SANFLAGS)
 
-SRC_DIR := TP1
-PROGRAMS := pb1 pb2 pb3 pb4 pb5
+EXEEXT ?=
+PROGRAM_BASENAMES := pb1 pb2 pb3 pb4 pb5
+PROGRAMS := $(addsuffix $(EXEEXT),$(PROGRAM_BASENAMES))
 
-.PHONY: all clean run-all $(addprefix run-,$(PROGRAMS))
+.PHONY: all clean run-all $(addprefix run-,$(PROGRAM_BASENAMES))
 
 all: $(PROGRAMS)
 
-pb1: pb1.cpp fonctions.cpp
-	$(CXX) $(CXXFLAGS) pb1.cpp fonctions.cpp -o $@
+%$(EXEEXT): %.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS)
 
+ifeq ($(EXEEXT),.exe)
+pb1: pb1.exe
+pb2: pb2.exe
+pb3: pb3.exe
+pb4: pb4.exe
+pb5: pb5.exe
+else
+pb1.exe: pb1
+pb2.exe: pb2
+pb3.exe: pb3
+pb4.exe: pb4
+pb5.exe: pb5
+endif
 
-pb2: pb2.cpp fonctions.cpp
-	$(CXX) $(CXXFLAGS) pb2.cpp fonctions.cpp -o $@
+run-all: all $(addprefix run-,$(PROGRAM_BASENAMES))
 
-
-pb3: pb3.cpp
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-pb4: pb4.cpp
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-pb5: pb5.cpp
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-run-all: all $(addprefix run-,$(PROGRAMS))
-
-run-pb1: pb1
-	pb1.exe
-	
-
-run-pb2: pb2
-	pb2.exe
-	
-
-run-pb3: pb3
-	pb3.exe
-	
-
-run-pb4: pb4
-	pb4.exe
-	
-
-run-pb5: pb5
-	pb5.exe
-	
+$(addprefix run-,$(PROGRAM_BASENAMES)): run-%: %$(EXEEXT)
+	./$<
 
 clean:
-	rm -f $(PROGRAMS)
+	rm -f $(PROGRAM_BASENAMES) $(addsuffix .exe,$(PROGRAM_BASENAMES))

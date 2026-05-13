@@ -1,58 +1,92 @@
 /**
- * 
- * \file 	
- * \author	
- * \date 	
- * Crée le 12-05-2026
- */
-
-// Collision : Écrivez un programme qui détermine si une collision se produit dans les x premières secondes
-// d’un trajet. Le temps total (nombre entier supérieur à 0) est fourni par l’utilisateur. Vous devez ensuite
-// lire la position initiale en x (quelconque) et la vitesse en x (entre -100 et 100) de deux trains. Toutes les
-// valeurs doivent être lues avec la fonction définie dans l’exercice 2. Vous pouvez utiliser la constante
-// INFINITY de cmath lorsqu’il n’y a pas de borne supérieure ou inférieure pour l’intervalle. Puis, vous
-// devez indiquer l’emplacement à chaque seconde des deux trains jusqu’à arriver au temps total ou à la
-// première collision. Vous devez finalement indiquer après combien de secondes il y a eu une collision ou
-// indiquer qu’il n’y en a pas eu. Le but est de vérifier à chaque seconde s’il y a une collision, et non de
-// calculer analytiquement le moment de la collision
+ * \mainpage TP1 - Exercice 3
+ * \file    pb3.cpp
+ * \author	Aloys Russel Tonfo & Mohamed Elbahrawy
+ * \date 	12-05-2026
+ * Crée le  12-05-2026
+*/
 
 #include <iostream>
 #include <cmath>
-#include "fonctions.h"
 using namespace std;
 
-int main(){
-    int totalTime = readInRange("Entrez le temps total du trajet (en secondes, > 0) : ", 1, INFINITY);
-    
-    cout << "Train 1 :" << endl;
-    int initialPosition1 = readInRange("Entrez la position initiale en x : ", -INFINITY, INFINITY);
-    int velocity1 = readInRange("Entrez la vitesse en x (entre -100 et 100) : ", -100, 100);
-    
-    cout << "Train 2 :" << endl;
-    int initialPosition2 = readInRange("Entrez la position initiale en x : ", -INFINITY, INFINITY);
-    int velocity2 = readInRange("Entrez la vitesse en x (entre -100 et 100) : ", -100, 100);
-    
-    bool collisionOccurred = false;
-    int collisionTime = -1;
+int readIntInRange(const string& prompt, float min, float max) {
+    float value;
+    while (true) {
+        cout << prompt;
+        cin >> value;
 
-    for (int t = 0; t <= totalTime; t++) {
-        int position1 = initialPosition1 + velocity1 * t;
-        int position2 = initialPosition2 + velocity2 * t;
-
-        cout << "Temps: " << t << "s - Train 1 Position: " << position1 << " | Train 2 Position: " << position2 << endl;
-
-        if (position1 == position2) {
-            collisionOccurred = true;
-            collisionTime = t;
-            break;
+        if (value >= min && value <= max) {
+            return static_cast<int>(value);
         }
     }
+}
 
-    if (collisionOccurred) {
-        cout << "Collision détectée après " << collisionTime << " secondes." << endl;
-    } else {
-        cout << "Aucune collision détectée pendant le trajet." << endl;
+int positionAfterTime(int initialPosition, int speed, int time) {
+    return initialPosition + speed * time;
+}
+
+bool collisionDuringSecond(int pos1Start, int speed1, int pos2Start, int speed2) {
+    int pos1End = pos1Start + speed1;
+    int pos2End = pos2Start + speed2;
+    
+    // Check if they occupy the same position at any point
+    if (pos1Start == pos2Start || pos1End == pos2End) {
+        return true;
     }
+    
+    // Check if they crossed (one was ahead, then behind)
+    if ((pos1Start < pos2Start && pos1End > pos2End) || 
+        (pos1Start > pos2Start && pos1End < pos2End)) {
+        return true;
+    }
+    
+    return false;
+}
 
-    return 0;
+int main() {
+    float minTime = 1;
+    float maxTime = INFINITY;
+    string promptTime = "Entrez le temps total : ";
+    int time = readIntInRange(promptTime, minTime, maxTime);
+
+    float minPositionTrain1 = -INFINITY;
+    float maxPositionTrain1 = INFINITY;
+    string promptPositionTrain1 = "Entrez la position initiale du premier train : ";
+    int positionTrain1 = readIntInRange(promptPositionTrain1, minPositionTrain1, maxPositionTrain1);
+
+    float minSpeedTrain1 = -100;
+    float maxSpeedTrain1 = 100;
+    string promptSpeedTrain1 = "Entrez la vitesse du premier train : ";
+    int speedTrain1 = readIntInRange(promptSpeedTrain1, minSpeedTrain1, maxSpeedTrain1);
+
+    float minPositionTrain2 = -INFINITY;
+    float maxPositionTrain2 = INFINITY;
+    string promptPositionTrain2 = "Entrez la position initiale du second train : ";
+    int positionTrain2 = readIntInRange(promptPositionTrain2, minPositionTrain2, maxPositionTrain2);
+
+    float minSpeedTrain2 = -100;
+    float maxSpeedTrain2 = 100;
+    string promptSpeedTrain2 = "Entrez la vitesse du second train : ";
+    int speedTrain2 = readIntInRange(promptSpeedTrain2, minSpeedTrain2, maxSpeedTrain2);
+
+    int timeElapsed = 0;
+
+    while (timeElapsed < time) {
+        int previousPositionTrain1 = positionTrain1;
+        int previousPositionTrain2 = positionTrain2;
+
+        timeElapsed++;
+        positionTrain1 = positionAfterTime(positionTrain1, speedTrain1, 1);
+        positionTrain2 = positionAfterTime(positionTrain2, speedTrain2, 1);
+        cout << "Apres " << timeElapsed << " seconde(s)" << endl;
+        cout << "Train 1 : " << positionTrain1 << endl;
+        cout << "Train 2 : " << positionTrain2 << endl;
+
+        if (collisionDuringSecond(previousPositionTrain1, speedTrain1, previousPositionTrain2, speedTrain2)) {
+            cout << "Il y a eu une collision pendant la " << timeElapsed << "e seconde!" << endl;
+            return 0;
+        }
+    }
+    cout << "Il n'y a pas eu de collision." << endl;
 }

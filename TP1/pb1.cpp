@@ -4,41 +4,39 @@
  * \author	Aloys Russel Tonfo & Mohamed Elbahrawy
  * \date 	12-05-2026
  * Crée le  12-05-2026
- */
+*/
 
-// Premier Nombre premier apres un entier donner
+
 #include <iostream>
+#include <cmath>
+
 using namespace std;
 
-// Fonction pour vérifier si un nombre est premier
 
-bool isPrime (int n){
-    if (n <= 1 ){
-        return false;
+bool isPrime(int number) {
+
+    for (int i = 2; i <= sqrt(number); ++i) {
+        if (number % i == 0) return false; 
     }
-    for (int i = 2 ; i <= n / 2 ; i++){
-        if (n % i == 0){
-            return false;
-        }    
-    }
-    return true;        
+    return true;
 }
 
-int nextPrime (int n){
-    int next = n + 1;
-    while (true){
-        if (isPrime(next)){
-            return next;
-        }
-        next++;
+int nextPrime(int number) {
+    while (true) {
+        if (isPrime(number)) return number;
+        ++number;
     }
 }
 
 int main() {
-    int n;
-    cout << "Entrez un entier : ";
-    cin >> n;
-    int next = nextPrime(n);
-    cout << "Le prochain nombre premier apres " << n << " est : " << next << endl;
-    return 0;
-}   
+    while (true) {
+        int number;
+        cout << "Entrez un nombre entier : ";
+        cin >> number;
+
+        if (number == -1) break;
+
+        int nextPrimeNumber = nextPrime(number);
+        cout << "Le prochain nombre premier est " << nextPrimeNumber << "." << endl;
+    }
+}
