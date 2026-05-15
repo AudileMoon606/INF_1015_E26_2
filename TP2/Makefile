@@ -11,42 +11,41 @@ SANFLAGS :=
 ifeq ($(ENABLE_SANITIZERS),1)
 SANFLAGS := -fsanitize=address,undefined -fno-sanitize-recover=all
 endif
+CPPFLAGS := -Iinclude
 CXXFLAGS := $(STD) $(WARNFLAGS) $(DBGFLAGS) $(SANFLAGS)
 LDFLAGS := $(SANFLAGS)
 
 EXEEXT ?=
-PROGRAM_BASENAMES := pb1 pb2 pb3 pb4 pb5
-PROGRAMS := $(addsuffix $(EXEEXT),$(PROGRAM_BASENAMES))
+PROGRAM_BASENAME := td2
+PROGRAM := $(PROGRAM_BASENAME)$(EXEEXT)
 
-.PHONY: all clean run-all $(addprefix run-,$(PROGRAM_BASENAMES))
+SOURCES := td2.cpp \
+	bibliotheque_cours/bibliotheque_cours.cpp \
+	bibliotheque_cours/verification_allocation.cpp
 
-all: $(PROGRAMS)
+HEADERS := structures.hpp \
+	include/bibliotheque_cours.hpp \
+	include/verification_allocation.hpp \
+	include/debogage_memoire.hpp
 
-%$(EXEEXT): %.cpp
-	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS)
+.PHONY: all clean run remise
+
+all: $(PROGRAM)
+
+$(PROGRAM): $(SOURCES) $(HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(SOURCES) -o $@ $(LDFLAGS)
 
 ifeq ($(EXEEXT),.exe)
-pb1: pb1.exe
-pb2: pb2.exe
-pb3: pb3.exe
-pb4: pb4.exe
-pb5: pb5.exe
+td2: td2.exe
 else
-pb1.exe: pb1
-pb2.exe: pb2
-pb3.exe: pb3
-pb4.exe: pb4
-pb5.exe: pb5
+td2.exe: td2
 endif
 
-run-all: all $(addprefix run-,$(PROGRAM_BASENAMES))
-
-$(addprefix run-,$(PROGRAM_BASENAMES)): run-%: %$(EXEEXT)
+run: $(PROGRAM)
 	./$<
 
 clean:
-	rm -f $(PROGRAM_BASENAMES) $(addsuffix .exe,$(PROGRAM_BASENAMES))
+	rm -f td2 td2.exe
 
-# Create submission zip file
 remise:
-	zip TD1_2336883_2506190.zip *.cpp *.hpp
+	zip TD2_2336883_2506190.zip *.cpp *.hpp Makefile
