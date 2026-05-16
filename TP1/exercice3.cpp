@@ -45,7 +45,7 @@ bool collisionDuringSecond(int pos1Start, int speed1, int pos2Start, int speed2)
 }
 
 int main() {
-    float minTime = 1;
+    float minTime = 1.0;
     float maxTime = INFINITY;
     string promptTime = "Entrez le temps total : ";
     int time = readIntInRange(promptTime, minTime, maxTime);
@@ -55,8 +55,8 @@ int main() {
     string promptPositionTrain1 = "Entrez la position initiale du premier train : ";
     int positionTrain1 = readIntInRange(promptPositionTrain1, minPositionTrain1, maxPositionTrain1);
 
-    float minSpeedTrain1 = -100;
-    float maxSpeedTrain1 = 100;
+    float minSpeedTrain1 = -100.0;
+    float maxSpeedTrain1 = 100.0;
     string promptSpeedTrain1 = "Entrez la vitesse du premier train : ";
     int speedTrain1 = readIntInRange(promptSpeedTrain1, minSpeedTrain1, maxSpeedTrain1);
 
@@ -65,8 +65,8 @@ int main() {
     string promptPositionTrain2 = "Entrez la position initiale du second train : ";
     int positionTrain2 = readIntInRange(promptPositionTrain2, minPositionTrain2, maxPositionTrain2);
 
-    float minSpeedTrain2 = -100;
-    float maxSpeedTrain2 = 100;
+    float minSpeedTrain2 = -100.0;
+    float maxSpeedTrain2 = 100.0;
     string promptSpeedTrain2 = "Entrez la vitesse du second train : ";
     int speedTrain2 = readIntInRange(promptSpeedTrain2, minSpeedTrain2, maxSpeedTrain2);
 

@@ -24,8 +24,8 @@ int readIntInRange(const string& prompt, float min, float max) {
 }
 
 int main() {
-    const float min = 0;
-    const float max = 1000;
+    const float min = 0.0;
+    const float max = 1000.0;
     string prompt = "Entrez un nombre entier : ";
     bool guessed = false;
     int nAttempts = 0;

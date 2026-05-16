@@ -7,34 +7,33 @@
 */
 
 #include <iostream>
-#include "fonctions.h"
 using namespace std;
 
 int main() {
     const int size = 10;
-    int arr[size];
+    int nombre[size];
 
     cout << "Entrez " << size << " entiers : ";
     for (int i = 0; i < size; ++i) {
-        cin >> arr[i];
+        cin >> nombre[i];
     }
 
     // Tri par sélection
     for (int i = 0; i < size - 1; ++i) {
         int minIndex = i;
         for (int j = i + 1; j < size; ++j) {
-            if (arr[j] < arr[minIndex]) {
+            if (nombre[j] < nombre[minIndex]) {
                 minIndex = j;
             }
         }
-        int temp = arr[i];
-        arr[i] = arr[minIndex];
-        arr[minIndex] = temp;
+        int temp = nombre[i];
+        nombre[i] = nombre[minIndex];
+        nombre[minIndex] = temp;
     }
 
     cout << "Tableau trié : ";
     for (int i = 0; i < size; ++i) {
-        cout << arr[i] << " ";
+        cout << nombre[i] << " ";
     }
     cout << endl;
 
