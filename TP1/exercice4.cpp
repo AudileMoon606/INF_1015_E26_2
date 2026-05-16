@@ -11,29 +11,29 @@ using namespace std;
 
 int main() {
     const int size = 10;
-    int nombre[size];
+    int nombres[size];
 
     cout << "Entrez " << size << " entiers : ";
     for (int i = 0; i < size; ++i) {
-        cin >> nombre[i];
+        cin >> nombres[i];
     }
 
     // Tri par sélection
     for (int i = 0; i < size - 1; ++i) {
         int minIndex = i;
         for (int j = i + 1; j < size; ++j) {
-            if (nombre[j] < nombre[minIndex]) {
+            if (nombres[j] < nombres[minIndex]) {
                 minIndex = j;
             }
         }
-        int temp = nombre[i];
-        nombre[i] = nombre[minIndex];
-        nombre[minIndex] = temp;
+        int temp = nombres[i];
+        nombres[i] = nombres[minIndex];
+        nombres[minIndex] = temp;
     }
 
-    cout << "Tableau trié : ";
+    cout << "Voici le tableau trie :";
     for (int i = 0; i < size; ++i) {
-        cout << nombre[i] << " ";
+        cout << nombres[i] << " ";
     }
     cout << endl;
 
