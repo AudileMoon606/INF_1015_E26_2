@@ -76,30 +76,31 @@ void ajouterFilm(ListeFilms &listeFilms, Film *film)
 	listeFilms.elements[listeFilms.nElements] = film;
 	listeFilms.nElements++;
 }
-
-void enleverFilm(ListeFilms &listeFilms, Film *film)
+void enleverFilm(ListeFilms &listeFilms, const Film *film)
 {
-	for (int i = 0; i < listeFilms.nElements; ++i)
-	{
-		if (listeFilms.elements[i] == film)
-		{
-			listeFilms.elements[i] = listeFilms.elements[listeFilms.nElements - 1];
-			listeFilms.nElements--;
-			return;
-		}
-	}
+    for (int i = 0; i < listeFilms.nElements; ++i){
+        if (listeFilms.elements[i] == film){
+            for (int j = i; j < listeFilms.nElements - 1; ++j){
+                listeFilms.elements[j] = listeFilms.elements[j + 1];
+            }
+            listeFilms.nElements--;
+            return;
+        }
+    }
 }
 
 void enleverActeur(ListeActeurs &listeActeurs, Acteur *acteur)
 {
-	for (int i = 0; i < listeActeurs.nElements; ++i)
-	{
-		if (listeActeurs.elements[i] == acteur)
-		{
-			listeActeurs.elements[i] = listeActeurs.elements[listeActeurs.nElements - 1];
+	for (int i = 0; i < listeActeurs.nElements; ++i){
+		if (listeActeurs.elements[i] == acteur){
+			for (int j = i; j < listeActeurs.nElements - 1; ++j)
+			{
+				listeActeurs.elements[j] = listeActeurs.elements[j + 1];
+			}
 			listeActeurs.nElements--;
 			return;
 		}
+		
 	}
 }
 
@@ -125,6 +126,7 @@ Acteur *lireActeur(istream &fichier)
 	acteur.nom = lireString(fichier);
 	acteur.anneeNaissance = int(lireUintTailleVariable(fichier));
 	acteur.sexe = char(lireUintTailleVariable(fichier));
+	
 	return {}; // TODO: Retourner un pointeur soit vers un acteur existant ou un nouvel acteur ayant les bonnes informations, selon si l'acteur existait déjà.  Pour fins de débogage, affichez les noms des acteurs crées; vous ne devriez pas voir le même nom d'acteur affiché deux fois pour la création.
 }
 
@@ -160,28 +162,26 @@ ListeFilms creerListe(string nomFichier)
 	return {}; // TODO: Retourner la liste de films.
 }
 
-void detruireFilm(ListeFilms &listeFilms, Film *film)
-{
-	// Retirer ce film de la liste principale avant de libérer sa mémoire.
-	enleverFilm(listeFilms, film);
+void detruireFilm(ListeFilms &listeFilms, Film *film){
+    if (film == nullptr)
+        return;
 
-	for (int i = 0; i < film->acteurs.nElements; ++i)
-	{
-		Acteur *acteur = film->acteurs.elements[i];
-		// Retirer ce film de la filmographie de l'acteur.
-		enleverFilm(acteur->joueDans, film);
+    enleverFilm(listeFilms, film);
 
-		// Si l'acteur ne joue plus dans aucun film, le détruire.
-		if (acteur->joueDans.nElements == 0)
-		{
-			cout << "Destruction acteur: " << acteur->nom << endl;
-			delete[] acteur->joueDans.elements;
-			delete acteur;
-		}
-	}
+    for (int i = 0; i < film->acteurs.nElements; ++i){
+        Acteur *acteur = film->acteurs.elements[i];
+        
+        enleverFilm(acteur->joueDans, film);
 
-	delete[] film->acteurs.elements;
-	delete film;
+        if (acteur->joueDans.nElements == 0){
+            cout << "Destruction acteur: " << acteur->nom << endl;
+            delete[] acteur->joueDans.elements;
+            delete acteur;
+        }
+    }
+
+    delete[] film->acteurs.elements;
+    delete film;
 }
 
 // TODO: Une fonction pour détruire une ListeFilms et tous les films qu'elle contient.
