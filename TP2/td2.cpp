@@ -4,7 +4,7 @@
  * \author	Aloys Russel Tonfo & Mohamed Elbahrawy
  * \date 	21-05-2026
  * Crée le  19-05-2026
-*/
+ */
 
 #pragma region "Includes"//{
 #define _CRT_SECURE_NO_WARNINGS // On permet d'utiliser les fonctions de copies de chaînes qui sont considérées non sécuritaires.
@@ -160,7 +160,14 @@ Film *lireFilm(istream &fichier, ListeFilms &listeFilms)
 	film->recette = int(lireUintTailleVariable(fichier));
 	film->acteurs.nElements = int(lireUintTailleVariable(fichier)); // NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
 	film->acteurs.capacite = film->acteurs.nElements;
-	film->acteurs.elements = film->acteurs.nElements > 0 ? new Acteur *[film->acteurs.nElements] : nullptr;
+	if (film->acteurs.nElements > 0)
+	{
+		film->acteurs.elements = new Acteur *[film->acteurs.nElements];
+	}
+	else
+	{
+		film->acteurs.elements = nullptr;
+	}
 
 	for (int i = 0; i < film->acteurs.nElements; i++)
 	{
