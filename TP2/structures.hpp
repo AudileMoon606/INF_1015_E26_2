@@ -1,3 +1,11 @@
+/**
+ * \mainpage TP2 - Gestion de mémoire dynamique et structures de données
+ * \file    structures.hpp
+ * \author	Aloys Russel Tonfo & Mohamed Elbahrawy
+ * \date 	21-05-2026
+ * Crée le  19-05-2026
+*/
+
 #pragma once
 // Structures mémoires pour une collection de films.
 

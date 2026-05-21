@@ -1,4 +1,12 @@
-﻿#pragma region "Includes"//{
+﻿/**
+ * \mainpage TP2 - Gestion de mémoire dynamique et structures de données
+ * \file    td2.cpp
+ * \author	Aloys Russel Tonfo & Mohamed Elbahrawy
+ * \date 	21-05-2026
+ * Crée le  19-05-2026
+*/
+
+#pragma region "Includes"//{
 #define _CRT_SECURE_NO_WARNINGS // On permet d'utiliser les fonctions de copies de chaînes qui sont considérées non sécuritaires.
 
 #include "structures.hpp" // Structures de données pour la collection de films en mémoire.
@@ -247,7 +255,7 @@ int main()
 {
 	bibliotheque_cours::activerCouleursAnsi(); // Permet sous Windows les "ANSI escape code" pour changer de couleurs https://en.wikipedia.org/wiki/ANSI_escape_code ; les consoles Linux/Mac les supportent normalement par défaut.
 
-	int *fuite = new int; // TODO: Enlever cette ligne après avoir vérifié qu'il y a bien un "Fuite detectee" de "4 octets" affiché à la fin de l'exécution, qui réfère à cette ligne du programme.
+	// int *fuite = new int; // TODO: Enlever cette ligne après avoir vérifié qu'il y a bien un "Fuite detectee" de "4 octets" affiché à la fin de l'exécution, qui réfère à cette ligne du programme.
 
 	static const string ligneDeSeparation = "\n\033[35m════════════════════════════════════════\033[0m\n";
 
