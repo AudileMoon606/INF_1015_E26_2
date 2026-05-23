@@ -70,6 +70,12 @@ string lireString(istream &fichier)
 
 // TODO: Une fonction pour ajouter un Film à une ListeFilms, le film existant déjà; on veut uniquement ajouter le pointeur vers le film existant.  Cette fonction doit doubler la taille du tableau alloué, avec au minimum un élément, dans le cas où la capacité est insuffisante pour ajouter l'élément.  Il faut alors allouer un nouveau tableau plus grand, copier ce qu'il y avait dans l'ancien, et éliminer l'ancien trop petit.  Cette fonction ne doit copier aucun Film ni Acteur, elle doit copier uniquement des pointeurs.
 
+ListeActeurs::ListeActeurs(int cap, int nElem) {
+    capacite = cap;
+    nElements = nElem; 
+    elements = make_unique<Acteur*[]>(static_cast<size_t>(capacite));
+}
+
 void ListeFilms::ajouterFilm(Film *film)
 {
 	if (nElements_ == capacite_)
@@ -100,11 +106,11 @@ void ListeFilms::enleverFilm(const Film *film)
 
 void enleverActeur(ListeActeurs &listeActeurs, Acteur *acteur)
 {
-	for (int i = 0; i < listeActeurs.nElements; ++i)
+	for (size_t i = 0; i <static_cast<size_t>(listeActeurs.nElements); ++i)
 	{
 		if (listeActeurs.elements[i] == acteur)
 		{
-			listeActeurs.elements[i] = listeActeurs.elements[listeActeurs.nElements - 1];
+			listeActeurs.elements[i] = listeActeurs.elements[static_cast<size_t>(listeActeurs.nElements - 1)];
 			listeActeurs.nElements--;
 			return;
 		}
@@ -115,9 +121,9 @@ void enleverActeur(ListeActeurs &listeActeurs, Acteur *acteur)
 
 const Acteur *trouverActeur(const ListeFilms &listeFilms, const string &nomActeur)
 {
-	for (const Film *film : span(listeFilms.getElements(), listeFilms.getNElements()))
+	for (const Film *film : span(listeFilms.getElements(),static_cast<size_t>( listeFilms.getNElements())))
 	{
-		for (const Acteur *acteur : span(film->acteurs.elements, film->acteurs.nElements))
+		for (const Acteur *acteur : span(film->acteurs.getElements(), static_cast<size_t>(film->acteurs.getNElements())))
 		{
 			if (acteur->nom == nomActeur)
 				return acteur;
@@ -152,29 +158,21 @@ Acteur *lireActeur(istream &fichier, ListeFilms &listeFilms)
 
 Film *lireFilm(istream &fichier, ListeFilms &listeFilms)
 {
-	Film *film = new Film;
+	auto film = make_unique<Film>();
 	film->titre = lireString(fichier);
 	film->realisateur = lireString(fichier);
 	film->anneeSortie = int(lireUintTailleVariable(fichier));
 	film->recette = int(lireUintTailleVariable(fichier));
 	film->acteurs.nElements = int(lireUintTailleVariable(fichier)); // NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
-	film->acteurs.capacite = film->acteurs.nElements;
-	if (film->acteurs.nElements > 0)
-	{
-		film->acteurs.elements = new Acteur *[film->acteurs.nElements];
-	}
-	else
-	{
-		film->acteurs.elements = nullptr;
-	}
-
-	for (int i = 0; i < film->acteurs.nElements; i++)
+	
+    film->acteurs = ListeActeurs(film->acteurs.nElements, film->acteurs.nElements);
+	for (size_t i = 0; i < static_cast<size_t>(film->acteurs.nElements); i++)
 	{
 		Acteur *acteur = lireActeur(fichier, listeFilms);
 		film->acteurs.elements[i] = acteur;
-		acteur->joueDans.ajouterFilm(film);
+		acteur->joueDans.ajouterFilm(film.get());
 	}
-	return film;
+	return film.release();
 }
 
 ListeFilms creerListe(string nomFichier)
@@ -196,7 +194,7 @@ ListeFilms creerListe(string nomFichier)
 
 void detruireFilm(Film *film)
 {
-	for (Acteur *acteur : span(film->acteurs.elements, film->acteurs.nElements))
+	for (Acteur *acteur : span(film->acteurs.getElements(), static_cast<size_t>(film->acteurs.getNElements())))
 	{
 		acteur->joueDans.enleverFilm(film);
 		if (acteur->joueDans.getNElements() == 0)
@@ -206,13 +204,13 @@ void detruireFilm(Film *film)
 			delete acteur;
 		}
 	}
-	delete[] film->acteurs.elements;
+	// delete[] film->acteurs.elements.get();
 	delete film;
 }
 
 void detruireListeFilms(ListeFilms &listeFilms)
 {
-	for (Film *film : span(listeFilms.getElements(), listeFilms.getNElements()))
+	for (Film *film : span(listeFilms.getElements(),static_cast<size_t>( listeFilms.getNElements())))
 	{
 		detruireFilm(film);
 	}
@@ -231,7 +229,7 @@ void afficherFilm(const Film &film)
 	cout << "Année       : " << film.anneeSortie << endl;
 	cout << "Recette     : " << film.recette << " M$" << endl;
 	cout << "Acteurs:" << endl;
-	for (const Acteur *acteur : span(film.acteurs.elements, film.acteurs.nElements))
+	for (const Acteur *acteur : span(film.acteurs.getElements(),static_cast<size_t>( film.acteurs.getNElements())))
 	{
 		afficherActeur(*acteur);
 	}
@@ -241,7 +239,7 @@ void afficherListeFilms(const ListeFilms &listeFilms)
 {
 	static const string ligneDeSeparation = "\n\033[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n";
 	cout << ligneDeSeparation;
-	for (const Film *film : span(listeFilms.getElements(), listeFilms.getNElements()))
+	for (const Film *film : span(listeFilms.getElements(),static_cast<size_t>( listeFilms.getNElements())))
 	{
 		afficherFilm(*film);
 		cout << ligneDeSeparation;

@@ -7,9 +7,12 @@
 */
 
 #pragma once
-// Structures mémoires pour une collection de films.
-
+#include <iostream>
 #include <string>
+#include <memory>
+
+using namespace std;
+
 
 struct Film; struct Acteur; // Permet d'utiliser les types alors qu'ils seront défini après.
 
@@ -44,8 +47,16 @@ public:
 };
 
 struct ListeActeurs {
-	int capacite, nElements;
-	Acteur** elements; // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
+	int capacite =0;
+    int  nElements=0 ;
+	unique_ptr<Acteur*[]> elements; // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
+    ListeActeurs() = default;
+    ListeActeurs(int cap, int nElem);
+
+    int getCapacite() const{ return capacite; }
+    int getNElements() const { return nElements; }
+    Acteur** getElements() const { return elements.get(); }
+
 };
 
 struct Film
