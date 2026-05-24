@@ -77,7 +77,9 @@ struct Film
 	int anneeSortie = 0;
     int  recette = 0; 
 	ListeActeurs acteurs;
+    
 };
+ostream& operator<<(std::ostream& os, const Film& film);
 
 struct Acteur
 {

@@ -226,17 +226,18 @@ void afficherActeur(const Acteur &acteur)
 	cout << "  " << acteur.nom << ", " << acteur.anneeNaissance << " " << acteur.sexe << endl;
 }
 
-void afficherFilm(const Film &film)
+ostream& operator<<(std::ostream& os, const Film& film)
 {
-	cout << "Titre       : " << film.titre << endl;
-	cout << "Réalisateur : " << film.realisateur << endl;
-	cout << "Année       : " << film.anneeSortie << endl;
-	cout << "Recette     : " << film.recette << " M$" << endl;
-	cout << "Acteurs:" << endl;
+	os << "Titre       : " << film.titre << endl;
+	os << "Réalisateur : " << film.realisateur << endl;
+	os << "Année       : " << film.anneeSortie << endl;
+	os << "Recette     : " << film.recette << " M$" << endl;
+	os << "Acteurs:" << endl;
 	for (const shared_ptr<Acteur>& acteur : span(film.acteurs.getElements(),static_cast<size_t>( film.acteurs.getNElements())))
 	{
-		afficherActeur(*acteur);
+		os << "  " << acteur->nom << ", " << acteur->anneeNaissance << " " << acteur->sexe << "\n";
 	}
+	return os;
 }
 
 void afficherListeFilms(const ListeFilms &listeFilms)
@@ -245,7 +246,7 @@ void afficherListeFilms(const ListeFilms &listeFilms)
 	cout << ligneDeSeparation;
 	for (const Film *film : span(listeFilms.getElements(),static_cast<size_t>( listeFilms.getNElements())))
 	{
-		afficherFilm(*film);
+		cout << *film << endl;
 		cout << ligneDeSeparation;
 	}
 }
@@ -276,8 +277,8 @@ int main()
 	// TODO: Afficher le premier film de la liste.  Devrait être Alien.
 	if (listeFilms.getNElements() > 0)
 	{
-		afficherFilm(**listeFilms.getElements());
-		// afficherFilm(*listeFilms.getElements()[0]);
+		cout << ligneDeSeparation << "Les films sont:" << endl;
+		cout << **listeFilms.getElements() << endl;
 	}
 
 	cout << ligneDeSeparation << "Les films sont:" << endl;
