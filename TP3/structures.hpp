@@ -56,13 +56,20 @@ struct ListeActeurs {
     public:
     ListeActeurs() = default;
     ListeActeurs(int cap);
+    ListeActeurs(const ListeActeurs& autre);
 
     int getCapacite() const{ return capacite; }
     int getNElements() const { return nElements; }
     shared_ptr<Acteur>* getElements() const { return elements.get(); }
 
-    void modidierElement(size_t index , shared_ptr<Acteur>& acteur){
-        if (index < static_cast<size_t>(capacite)){
+    void initialiser(int cap) {
+    capacite = cap;
+    nElements = cap;
+    elements = std::make_unique<std::shared_ptr<Acteur>[]>(static_cast<size_t>(capacite));
+}
+
+    void modifierElement(size_t index, const shared_ptr<Acteur>& acteur) {
+        if (index < static_cast<size_t>(nElements)) {
             elements[index] = acteur;
         }
     }

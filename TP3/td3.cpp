@@ -76,6 +76,19 @@ ListeActeurs::ListeActeurs(int cap) {
     elements = make_unique<shared_ptr<Acteur>[]>(static_cast<size_t>(capacite));
 }
 
+// Copie de la liste des acteur en cas de besoins au vu du fait que cela est un unique ptr qui ne peut pas etre copier directement 
+ListeActeurs::ListeActeurs(const ListeActeurs& autre) {
+    capacite = autre.capacite;
+    nElements = autre.nElements;
+
+    elements = make_unique<shared_ptr<Acteur>[]>(static_cast<size_t>(capacite));
+
+    for (size_t i = 0; i < static_cast<size_t>(nElements); ++i) {
+        elements[i] = autre.elements[i];
+    }
+}
+
+
 void ListeFilms::ajouterFilm(Film *film)
 {
 	if (nElements_ == capacite_)
@@ -170,11 +183,11 @@ Film *lireFilm(istream &fichier, ListeFilms &listeFilms)
 	film->anneeSortie = int(lireUintTailleVariable(fichier));
 	film->recette = int(lireUintTailleVariable(fichier));
 	// film->acteurs.nElements = int(lireUintTailleVariable(fichier)); // NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
-	film->acteurs = ListeActeurs(int(lireUintTailleVariable(fichier)));
+	film->acteurs.initialiser(int(lireUintTailleVariable(fichier)));
 	for (size_t i = 0; i < static_cast<size_t>(film->acteurs.getNElements()); i++)
 	{
 		shared_ptr<Acteur> acteur = lireActeur(fichier, listeFilms);
-		film->acteurs.modidierElement(i , acteur);
+		film->acteurs.modifierElement(i, acteur);
 		// acteur->joueDans.ajouterFilm(film.get());
 	}
 	return film.release();
@@ -281,6 +294,8 @@ int main()
 		cout << **listeFilms.getElements() << endl;
 	}
 
+	
+
 	cout << ligneDeSeparation << "Les films sont:" << endl;
 	// TODO: Afficher la liste des films.  Il devrait y en avoir 7.
 	afficherListeFilms(listeFilms);
@@ -295,6 +310,28 @@ int main()
 	// afficherFilmographieActeur(listeFilms, "Benedict Cumberbatch");
 
 	// TODO: Détruire et enlever le premier film de la liste (Alien).  Ceci devrait "automatiquement" (par ce que font vos fonctions) détruire les acteurs Tom Skerritt et John Hurt, mais pas Sigourney Weaver puisqu'elle joue aussi dans Avatar.
+
+	// Operation sur le film Skylien
+	//Creation du film 
+	Film skylien = *listeFilms.getElements()[0];
+
+	// Changement du titre du film skylien pour "Skylien"
+	skylien.titre = "Skylien";
+
+	//changement du premier acteur
+	skylien.acteurs.modifierElement(0, listeFilms.getElements()[1]->acteurs.getElements()[0]);
+
+	//changement du nom du premier acteur
+	skylien.acteurs.getElements()[0]->nom = "Daniel Wroughton Craig";
+
+    // Affichage des modifications pour ce film
+	cout << ligneDeSeparation << "AFFICHAGE DES FILMS (VÉRIFICATION DE LA COPIE ET DU PARTAGE) :" << endl;
+    cout << "--- Film local : skylien ---" << endl;
+    cout << skylien << endl;
+
+
+
+
 	if (listeFilms.getNElements() > 0)
 	{
 		Film *filmADetruire = listeFilms.getElements()[0];
@@ -308,6 +345,7 @@ int main()
 
 	// TODO: Faire les appels qui manquent pour avoir 0% de lignes non exécutées dans le programme (aucune ligne rouge dans la couverture de code; c'est normal que les lignes de "new" et "delete" soient jaunes).  Vous avez aussi le droit d'effacer les lignes du programmes qui ne sont pas exécutée, si finalement vous pensez qu'elle ne sont pas utiles.
 
+	
 	// TODO: Détruire tout avant de terminer le programme.  La bibliothèque de verification_allocation devrait afficher "Aucune fuite detectee." a la sortie du programme; il affichera "Fuite detectee:" avec la liste des blocs, s'il manque des delete.
 	detruireListeFilms(listeFilms);
 }
