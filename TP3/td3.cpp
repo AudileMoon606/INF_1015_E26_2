@@ -312,6 +312,7 @@ int main()
 	// TODO: Détruire et enlever le premier film de la liste (Alien).  Ceci devrait "automatiquement" (par ce que font vos fonctions) détruire les acteurs Tom Skerritt et John Hurt, mais pas Sigourney Weaver puisqu'elle joue aussi dans Avatar.
 
 	// Operation sur le film Skylien
+	
 	//Creation du film 
 	Film skylien = *listeFilms.getElements()[0];
 
