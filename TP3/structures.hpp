@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <functional>
 
 using namespace std;
 
@@ -33,6 +34,8 @@ public:
     int getCapacite() const { return capacite_; }
     int getNElements() const { return nElements_; }
     Film** getElements() const { return elements_; }
+
+    Film* chercherFilm(const function<bool(const Film*)>& critere) const;
 
     void ajouterFilm(Film* film);
     void enleverFilm(const Film* film);
