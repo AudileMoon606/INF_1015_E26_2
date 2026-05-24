@@ -47,27 +47,42 @@ public:
 };
 
 struct ListeActeurs {
+
+    private:
 	int capacite =0;
     int  nElements=0 ;
-	unique_ptr<Acteur*[]> elements; // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
+	unique_ptr<shared_ptr<Acteur>[]> elements; // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
+
+    public:
     ListeActeurs() = default;
-    ListeActeurs(int cap, int nElem);
+    ListeActeurs(int cap);
 
     int getCapacite() const{ return capacite; }
     int getNElements() const { return nElements; }
-    Acteur** getElements() const { return elements.get(); }
+    shared_ptr<Acteur>* getElements() const { return elements.get(); }
+
+    void modidierElement(size_t index , shared_ptr<Acteur>& acteur){
+        if (index < static_cast<size_t>(capacite)){
+            elements[index] = acteur;
+        }
+    }
+
+    friend void enleverActeur(ListeActeurs& listeActeurs, Acteur* acteur);
 
 };
 
 struct Film
 {
 	std::string titre, realisateur; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
-	int anneeSortie, recette; // Année de sortie et recette globale du film en millions de dollars
+	int anneeSortie = 0;
+    int  recette = 0; 
 	ListeActeurs acteurs;
 };
 
 struct Acteur
 {
-	std::string nom; int anneeNaissance; char sexe;
-	ListeFilms joueDans;
+	std::string nom; 
+    int anneeNaissance = 0; 
+    char sexe = '\0';
+	// ListeFilms joueDans;
 };

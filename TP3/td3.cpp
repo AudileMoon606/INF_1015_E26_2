@@ -70,10 +70,10 @@ string lireString(istream &fichier)
 
 // TODO: Une fonction pour ajouter un Film à une ListeFilms, le film existant déjà; on veut uniquement ajouter le pointeur vers le film existant.  Cette fonction doit doubler la taille du tableau alloué, avec au minimum un élément, dans le cas où la capacité est insuffisante pour ajouter l'élément.  Il faut alors allouer un nouveau tableau plus grand, copier ce qu'il y avait dans l'ancien, et éliminer l'ancien trop petit.  Cette fonction ne doit copier aucun Film ni Acteur, elle doit copier uniquement des pointeurs.
 
-ListeActeurs::ListeActeurs(int cap, int nElem) {
+ListeActeurs::ListeActeurs(int cap) {
     capacite = cap;
-    nElements = nElem; 
-    elements = make_unique<Acteur*[]>(static_cast<size_t>(capacite));
+    nElements = cap; 
+    elements = make_unique<shared_ptr<Acteur>[]>(static_cast<size_t>(capacite));
 }
 
 void ListeFilms::ajouterFilm(Film *film)
@@ -108,7 +108,7 @@ void enleverActeur(ListeActeurs &listeActeurs, Acteur *acteur)
 {
 	for (size_t i = 0; i <static_cast<size_t>(listeActeurs.nElements); ++i)
 	{
-		if (listeActeurs.elements[i] == acteur)
+		if (listeActeurs.elements[i].get() == acteur)
 		{
 			listeActeurs.elements[i] = listeActeurs.elements[static_cast<size_t>(listeActeurs.nElements - 1)];
 			listeActeurs.nElements--;
@@ -123,17 +123,17 @@ const Acteur *trouverActeur(const ListeFilms &listeFilms, const string &nomActeu
 {
 	for (const Film *film : span(listeFilms.getElements(),static_cast<size_t>( listeFilms.getNElements())))
 	{
-		for (const Acteur *acteur : span(film->acteurs.getElements(), static_cast<size_t>(film->acteurs.getNElements())))
+		for (const shared_ptr<Acteur>& acteur : span(film->acteurs.getElements(), static_cast<size_t>(film->acteurs.getNElements())))
 		{
 			if (acteur->nom == nomActeur)
-				return acteur;
+				return acteur.get();
 		}
 	}
 	return nullptr;
 }
 
 // TODO: Compléter les fonctions pour lire le fichier et créer/allouer une ListeFilms.  La ListeFilms devra être passée entre les fonctions, pour vérifier l'existence d'un Acteur avant de l'allouer à nouveau (cherché par nom en utilisant la fonction ci-dessus).
-Acteur *lireActeur(istream &fichier, ListeFilms &listeFilms)
+shared_ptr<Acteur> lireActeur(istream &fichier, ListeFilms &listeFilms)
 {
 	Acteur acteur = {};
 	acteur.nom = lireString(fichier);
@@ -142,18 +142,24 @@ Acteur *lireActeur(istream &fichier, ListeFilms &listeFilms)
 
 	const Acteur *acteurExistant = trouverActeur(listeFilms, acteur.nom);
 	if (acteurExistant)
-		return const_cast<Acteur *>(acteurExistant);
+		// On doit retrouver le sharePtr qui le possede a ce moment 
+		for (int i = 0; i < listeFilms.getNElements(); i++) {
+            Film* f = listeFilms.getElements()[i];
+            for (size_t j = 0; j < static_cast<size_t>(f->acteurs.getNElements()); j++) {
+                if (f->acteurs.getElements()[j].get() == acteurExistant) {
+                    return f->acteurs.getElements()[j]; 
+                }
+            }
+        }
 
-	Acteur *nouvelActeur = new Acteur;
-	nouvelActeur->nom = acteur.nom;
-	nouvelActeur->anneeNaissance = acteur.anneeNaissance;
-	nouvelActeur->sexe = acteur.sexe;
-	// nouvelActeur->joueDans.capacite = 0;
-	// nouvelActeur->joueDans.nElements = 0;
-	// nouvelActeur->joueDans.elements = nullptr;
 
-	cout << "Création acteur: " << nouvelActeur->nom << endl;
-	return nouvelActeur;
+	auto nouvelActeur = make_shared<Acteur>();
+    nouvelActeur->nom = acteur.nom;
+    nouvelActeur->anneeNaissance = acteur.anneeNaissance;
+    nouvelActeur->sexe = acteur.sexe;
+
+    cout << "Création acteur: " << nouvelActeur->nom << endl;
+    return nouvelActeur;
 }
 
 Film *lireFilm(istream &fichier, ListeFilms &listeFilms)
@@ -163,14 +169,13 @@ Film *lireFilm(istream &fichier, ListeFilms &listeFilms)
 	film->realisateur = lireString(fichier);
 	film->anneeSortie = int(lireUintTailleVariable(fichier));
 	film->recette = int(lireUintTailleVariable(fichier));
-	film->acteurs.nElements = int(lireUintTailleVariable(fichier)); // NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
-	
-    film->acteurs = ListeActeurs(film->acteurs.nElements, film->acteurs.nElements);
-	for (size_t i = 0; i < static_cast<size_t>(film->acteurs.nElements); i++)
+	// film->acteurs.nElements = int(lireUintTailleVariable(fichier)); // NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
+	film->acteurs = ListeActeurs(int(lireUintTailleVariable(fichier)));
+	for (size_t i = 0; i < static_cast<size_t>(film->acteurs.getNElements()); i++)
 	{
-		Acteur *acteur = lireActeur(fichier, listeFilms);
-		film->acteurs.elements[i] = acteur;
-		acteur->joueDans.ajouterFilm(film.get());
+		shared_ptr<Acteur> acteur = lireActeur(fichier, listeFilms);
+		film->acteurs.modidierElement(i , acteur);
+		// acteur->joueDans.ajouterFilm(film.get());
 	}
 	return film.release();
 }
@@ -194,17 +199,16 @@ ListeFilms creerListe(string nomFichier)
 
 void detruireFilm(Film *film)
 {
-	for (Acteur *acteur : span(film->acteurs.getElements(), static_cast<size_t>(film->acteurs.getNElements())))
-	{
-		acteur->joueDans.enleverFilm(film);
-		if (acteur->joueDans.getNElements() == 0)
-		{
-			cout << "Destruction acteur: " << acteur->nom << endl;
-			acteur->joueDans.detruire();
-			delete acteur;
-		}
-	}
-	// delete[] film->acteurs.elements.get();
+	// for (shared_ptr<Acteur>& acteur : span(film->acteurs.getElements(), static_cast<size_t>(film->acteurs.getNElements())))
+	// {
+	// 	acteur->joueDans.enleverFilm(film);
+	// 	if (acteur->joueDans.getNElements() == 0)
+	// 	{
+	// 		cout << "Destruction acteur: " << acteur->nom << endl;
+	// 		acteur->joueDans.detruire();
+	// 		delete acteur;
+	// 	}
+	// }
 	delete film;
 }
 
@@ -229,7 +233,7 @@ void afficherFilm(const Film &film)
 	cout << "Année       : " << film.anneeSortie << endl;
 	cout << "Recette     : " << film.recette << " M$" << endl;
 	cout << "Acteurs:" << endl;
-	for (const Acteur *acteur : span(film.acteurs.getElements(),static_cast<size_t>( film.acteurs.getNElements())))
+	for (const shared_ptr<Acteur>& acteur : span(film.acteurs.getElements(),static_cast<size_t>( film.acteurs.getNElements())))
 	{
 		afficherActeur(*acteur);
 	}
@@ -246,14 +250,14 @@ void afficherListeFilms(const ListeFilms &listeFilms)
 	}
 }
 
-void afficherFilmographieActeur(const ListeFilms &listeFilms, const string &nomActeur)
-{
-	const Acteur *acteur = trouverActeur(listeFilms, nomActeur);
-	if (acteur == nullptr)
-		cout << "Aucun acteur de ce nom" << endl;
-	else
-		afficherListeFilms(acteur->joueDans);
-}
+// void afficherFilmographieActeur(const ListeFilms &listeFilms, const string &nomActeur)
+// {
+// 	const Acteur *acteur = trouverActeur(listeFilms, nomActeur);
+// 	if (acteur == nullptr)
+// 		cout << "Aucun acteur de ce nom" << endl;
+// 	else
+// 		afficherListeFilms(acteur->joueDans);
+// }
 
 int main()
 {
@@ -287,7 +291,7 @@ int main()
 
 	cout << ligneDeSeparation << "Liste des films où Benedict Cumberbatch joue sont:" << endl;
 	// TODO: Afficher la liste des films où Benedict Cumberbatch joue.  Il devrait y avoir Le Hobbit et Le jeu de l'imitation.
-	afficherFilmographieActeur(listeFilms, "Benedict Cumberbatch");
+	// afficherFilmographieActeur(listeFilms, "Benedict Cumberbatch");
 
 	// TODO: Détruire et enlever le premier film de la liste (Alien).  Ceci devrait "automatiquement" (par ce que font vos fonctions) détruire les acteurs Tom Skerritt et John Hurt, mais pas Sigourney Weaver puisqu'elle joue aussi dans Avatar.
 	if (listeFilms.getNElements() > 0)
