@@ -1,9 +1,11 @@
 ﻿/**
- * \mainpage TP3
- * \file    td2.cpp
- * \author	Aloys Russel Tonfo & Mohamed Elbahrawy
- * \date 	21-05-2026
- * Crée le  19-05-2026
+ * \mainpage Description du projet TP3
+ * \file     td3.cpp
+ * \author   Aloys Russel Tonfo & Mohamed Elbahrawy
+ * \date     26 mai 2026
+ * \version  1.0
+ * \brief    Code principal pour le TP3 - Structures de données et listes génériques.
+ * Développé le 19-05-2026.
  */
 #pragma region "Includes"//{
 #define _CRT_SECURE_NO_WARNINGS // On permet d'utiliser les fonctions de copies de chaînes qui sont considérées non sécuritaires.
@@ -70,26 +72,26 @@ string lireString(istream &fichier)
 
 // TODO: Une fonction pour ajouter un Film à une ListeFilms, le film existant déjà; on veut uniquement ajouter le pointeur vers le film existant.  Cette fonction doit doubler la taille du tableau alloué, avec au minimum un élément, dans le cas où la capacité est insuffisante pour ajouter l'élément.  Il faut alors allouer un nouveau tableau plus grand, copier ce qu'il y avait dans l'ancien, et éliminer l'ancien trop petit.  Cette fonction ne doit copier aucun Film ni Acteur, elle doit copier uniquement des pointeurs.
 
-ListeActeurs::ListeActeurs(int cap)
-{
-	capacite = cap;
-	nElements = cap;
-	elements = make_unique<shared_ptr<Acteur>[]>(static_cast<size_t>(capacite));
-}
+// ListeActeurs::ListeActeurs(int cap)
+// {
+// 	capacite = cap;
+// 	nElements = cap;
+// 	elements = make_unique<shared_ptr<Acteur>[]>(static_cast<size_t>(capacite));
+// }
 
 // Copie de la liste des acteur en cas de besoins au vu du fait que cela est un unique ptr qui ne peut pas etre copier directement
-ListeActeurs::ListeActeurs(const ListeActeurs &autre)
-{
-	capacite = autre.capacite;
-	nElements = autre.nElements;
+// ListeActeurs::ListeActeurs(const ListeActeurs &autre)
+// {
+// 	capacite = autre.capacite;
+// 	nElements = autre.nElements;
 
-	elements = make_unique<shared_ptr<Acteur>[]>(static_cast<size_t>(capacite));
+// 	elements = make_unique<shared_ptr<Acteur>[]>(static_cast<size_t>(capacite));
 
-	for (size_t i = 0; i < static_cast<size_t>(nElements); ++i)
-	{
-		elements[i] = autre.elements[i];
-	}
-}
+// 	for (size_t i = 0; i < static_cast<size_t>(nElements); ++i)
+// 	{
+// 		elements[i] = autre.elements[i];
+// 	}
+// }
 
 void ListeFilms::ajouterFilm(Film *film)
 {
@@ -111,22 +113,25 @@ void ListeFilms::enleverFilm(const Film *film)
 	{
 		if (elements_[i] == film)
 		{
-
-			elements_[i] = elements_[nElements_ - 1];
+			// Décale tous les films suivants vers la gauche pour maintenir l'ordre
+			for (int j = i; j < nElements_ - 1; ++j)
+			{
+				elements_[j] = elements_[j + 1];
+			}
 			nElements_--;
 			return;
 		}
 	}
 }
 
-void enleverActeur(ListeActeurs &listeActeurs, Acteur *acteur)
+void enleverActeur(Liste<Acteur> &listeActeurs, Acteur *acteur)
 {
-	for (size_t i = 0; i < static_cast<size_t>(listeActeurs.nElements); ++i)
+	for (int i = 0; i < listeActeurs.getNElements(); ++i)
 	{
-		if (listeActeurs.elements[i].get() == acteur)
+		if (listeActeurs.getElements()[i].get() == acteur)
 		{
-			listeActeurs.elements[i] = listeActeurs.elements[static_cast<size_t>(listeActeurs.nElements - 1)];
-			listeActeurs.nElements--;
+			listeActeurs.getElements()[i] = listeActeurs.getElements()[listeActeurs.getNElements() - 1];
+			listeActeurs.modifierElement(static_cast<size_t>(listeActeurs.getNElements() - 1), nullptr);
 			return;
 		}
 	}
@@ -157,18 +162,20 @@ shared_ptr<Acteur> lireActeur(istream &fichier, ListeFilms &listeFilms)
 
 	const Acteur *acteurExistant = trouverActeur(listeFilms, acteur.nom);
 	if (acteurExistant)
-		// On doit retrouver le sharePtr qui le possede a ce moment
+	{
 		for (int i = 0; i < listeFilms.getNElements(); i++)
 		{
 			Film *f = listeFilms.getElements()[i];
-			for (size_t j = 0; j < static_cast<size_t>(f->acteurs.getNElements()); j++)
+			for (int j = 0; j < f->acteurs.getNElements(); j++)
 			{
-				if (f->acteurs.getElements()[j].get() == acteurExistant)
+				// Vérification de sécurité pour éviter de lire un shared_ptr non assigné
+				if (f->acteurs.getElements()[j] && f->acteurs.getElements()[j].get() == acteurExistant)
 				{
 					return f->acteurs.getElements()[j];
 				}
 			}
 		}
+	}
 
 	auto nouvelActeur = make_shared<Acteur>();
 	nouvelActeur->nom = acteur.nom;
@@ -201,11 +208,11 @@ Film *lireFilm(istream &fichier, ListeFilms &listeFilms)
 
 Film *ListeFilms::chercherFilm(const function<bool(const Film *)> &critere) const
 {
-	for (const Film *film : span(elements_, static_cast<size_t>(nElements_)))
+	for (int i = 0; i < nElements_; ++i)
 	{
-		if (critere(film))
+		if (critere(elements_[i]))
 		{
-			return const_cast<Film *>(film);
+			return elements_[i];
 		}
 	}
 	return nullptr;
@@ -346,15 +353,41 @@ int main()
 	cout << skylien << endl;
 
 	// test de la fonction de recherche
+	Film *filmTrouve = listeFilms.chercherFilm([](const Film *f)
+											   { return f->recette == 955; });
+	if (filmTrouve)
+	{
+		cout << "Film trouve: " << filmTrouve->titre << endl;
+	}
 
-	Film *filmTrouve = listeFilms.chercherFilm([](const Film *f){
-		return f->recette == 955; });
+	// consigne chapitre 9
+	cout << ligneDeSeparation << "LISTE GENERIQUE :" << endl;
+
+	// Étape 2 : Construction d'une Liste<string> et ajout de deux éléments
+	Liste<string> listeTextes;
+	listeTextes.initialiser(2);
+	listeTextes.modifierElement(0, make_shared<string>("Texte Initial A"));
+	listeTextes.modifierElement(1, make_shared<string>("Texte Initial B"));
+
+	// Copie de la liste dans une nouvelle liste
+	Liste<string> listeTextes2 = listeTextes;
+
+	// Étape 3 : Remplacement du premier et modification du texte du deuxième
+	listeTextes[0] = make_shared<string>("Nouveau Texte A");
+	*listeTextes[1] = "Texte B Modifie";
+
+	// Étape 4 : Affichage des 4 textes
+	cout << "listeTextes[0]  : " << *listeTextes[0] << endl;
+	cout << "listeTextes[1]  : " << *listeTextes[1] << endl;
+	cout << "listeTextes2[0] : " << *listeTextes2[0] << endl;
+	cout << "listeTextes2[1] : " << *listeTextes2[1] << endl;
 
 	if (listeFilms.getNElements() > 0)
-	{
-		Film *filmADetruire = listeFilms.getElements()[0];
-		listeFilms.enleverFilm(filmADetruire); 
-		detruireFilm(filmADetruire);		  
+{
+    Film *filmADetruire = listeFilms.getElements()[0]; 
+    listeFilms.enleverFilm(filmADetruire);         
+    detruireFilm(filmADetruire);                  
+}
 
 	cout << ligneDeSeparation << "Les films sont maintenant:" << endl;
 	// TODO: Afficher la liste des films.
@@ -364,4 +397,6 @@ int main()
 
 	// TODO: Détruire tout avant de terminer le programme.  La bibliothèque de verification_allocation devrait afficher "Aucune fuite detectee." a la sortie du programme; il affichera "Fuite detectee:" avec la liste des blocs, s'il manque des delete.
 	detruireListeFilms(listeFilms);
+
+	return 0;
 }

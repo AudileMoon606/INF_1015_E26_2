@@ -1,10 +1,11 @@
 /**
- * \mainpage TP3 
- * \file    structures.hpp
- * \author	Aloys Russel Tonfo & Mohamed Elbahrawy
- * \date 	21-05-2026
- * Crée le  19-05-2026
-*/
+ * \file     structures.hpp
+ * \author   Aloys Russel Tonfo & Mohamed Elbahrawy
+ * \date     26 mai 2026
+ * \version  1.0
+ * \brief    Déclarations des structures de données (Film, Acteur, Liste) pour le TP3.
+ * Développé le 19-05-2026.
+ */
 
 #pragma once
 #include <iostream>
@@ -49,37 +50,56 @@ public:
 
 };
 
-struct ListeActeurs {
+template<typename T>
+class Liste { 
+private:
+    int capacite = 0;
+    int nElements = 0;
+    std::unique_ptr<shared_ptr<T>[]> elements;
 
-    private:
-	int capacite =0;
-    int  nElements=0 ;
-	unique_ptr<shared_ptr<Acteur>[]> elements; // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
-
-    public:
-    ListeActeurs() = default;
-    ListeActeurs(int cap);
-    ListeActeurs(const ListeActeurs& autre);
-
-    int getCapacite() const{ return capacite; }
-    int getNElements() const { return nElements; }
-    shared_ptr<Acteur>* getElements() const { return elements.get(); }
-
-    void initialiser(int cap) {
-    capacite = cap;
-    nElements = cap;
-    elements = std::make_unique<std::shared_ptr<Acteur>[]>(static_cast<size_t>(capacite));
-}
-
-    void modifierElement(size_t index, const shared_ptr<Acteur>& acteur) {
-        if (index < static_cast<size_t>(nElements)) {
-            elements[index] = acteur;
+public:
+    Liste() = default;
+    Liste(int cap) { initialiser(cap); }
+    
+    // Constructeur de copie
+    Liste(const Liste& autre) {
+        initialiser(autre.capacite);
+        nElements = autre.nElements;
+        for (size_t i = 0; i < static_cast<size_t>(nElements); ++i) {
+            elements[i] = autre.elements[i]; 
         }
     }
 
-    friend void enleverActeur(ListeActeurs& listeActeurs, Acteur* acteur);
+    int getCapacite() const { return capacite; }
+    int getNElements() const { return nElements; }
+    
+    shared_ptr<T>* getElements() { return elements.get(); }
+    const shared_ptr<T>* getElements() const { return elements.get(); }
 
+    void initialiser(int cap) {
+    capacite = cap;
+    nElements = cap;  
+    elements = make_unique<shared_ptr<T>[]>(static_cast<size_t>(cap));
+}
+
+    void modifierElement(size_t index, const std::shared_ptr<T>& element) {
+        if (index < static_cast<size_t>(capacite)) { 
+            elements[index] = element;
+            if (index >= static_cast<size_t>(nElements)) {
+                nElements = static_cast<int>(index) + 1; 
+            }
+        }
+    }
+    shared_ptr<T>& operator[](size_t index) {
+        return elements[index];
+    }
+
+    friend void enleverElement(Liste& liste, T* elementAEnlever) {
+        
+    }
 };
+
+using ListeActeurs = Liste<Acteur>; 
 
 struct Film
 {
