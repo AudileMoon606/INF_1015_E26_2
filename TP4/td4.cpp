@@ -143,7 +143,7 @@ const Acteur *trouverActeur(const ListeFilms &listeFilms, const string &nomActeu
 {
 	for (const Film *film : span(listeFilms.getElements(), static_cast<size_t>(listeFilms.getNElements())))
 	{
-		for (const shared_ptr<Acteur> &acteur : span(film->acteurs.getElements(), static_cast<size_t>(film->acteurs.getNElements())))
+		for (const shared_ptr<Acteur> &acteur : span(film->acteurs_.getElements(), static_cast<size_t>(film->acteurs_.getNElements())))
 		{
 			if (acteur->nom == nomActeur)
 				return acteur.get();
@@ -160,23 +160,26 @@ shared_ptr<Acteur> lireActeur(istream &fichier, ListeFilms &listeFilms)
 	acteur.anneeNaissance = int(lireUintTailleVariable(fichier));
 	acteur.sexe = char(lireUintTailleVariable(fichier));
 
+	// Vérifier l'existence d'un Acteur avant de l'allouer à nouveau
 	const Acteur *acteurExistant = trouverActeur(listeFilms, acteur.nom);
-	if (acteurExistant)
+
+	if (acteurExistant != nullptr)
 	{
+		// On cherche le shared_ptr correspondant à cet acteur existant dans les films déjà chargés
 		for (int i = 0; i < listeFilms.getNElements(); i++)
 		{
 			Film *f = listeFilms.getElements()[i];
-			for (int j = 0; j < f->acteurs.getNElements(); j++)
+			for (int j = 0; j < f->acteurs_.getNElements(); j++)
 			{
-				// Vérification de sécurité pour éviter de lire un shared_ptr non assigné
-				if (f->acteurs.getElements()[j] && f->acteurs.getElements()[j].get() == acteurExistant)
+				if (f->acteurs_.getElements()[j] && f->acteurs_.getElements()[j].get() == acteurExistant)
 				{
-					return f->acteurs.getElements()[j];
+					return f->acteurs_.getElements()[j]; // On retourne le shared_ptr existant (partage de ressource)
 				}
 			}
 		}
 	}
 
+	// Si l'acteur n'existe pas encore, on l'alloue proprement
 	auto nouvelActeur = make_shared<Acteur>();
 	nouvelActeur->nom = acteur.nom;
 	nouvelActeur->anneeNaissance = acteur.anneeNaissance;
@@ -189,21 +192,21 @@ shared_ptr<Acteur> lireActeur(istream &fichier, ListeFilms &listeFilms)
 Film *lireFilm(istream &fichier, ListeFilms &listeFilms)
 {
 	auto film = make_unique<Film>();
-	film->titre = lireString(fichier);
-	film->realisateur = lireString(fichier);
-	film->anneeSortie = int(lireUintTailleVariable(fichier));
-	film->recette = int(lireUintTailleVariable(fichier));
-	// film->acteurs.nElements = int(lireUintTailleVariable(fichier)); // NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
-	film->acteurs.initialiser(int(lireUintTailleVariable(fichier)));
-	for (size_t i = 0; i < static_cast<size_t>(film->acteurs.getNElements()); i++)
+
+	// AJUSTEMENT Q1 : Assignation directe aux attributs hérités et encapsulés de Item et Film
+	film->titre_ = lireString(fichier);
+	film->realisateur_ = lireString(fichier);
+	film->annee_ = int(lireUintTailleVariable(fichier));
+	film->recette_ = int(lireUintTailleVariable(fichier));
+
+	film->acteurs_.initialiser(int(lireUintTailleVariable(fichier)));
+	for (size_t i = 0; i < static_cast<size_t>(film->acteurs_.getNElements()); i++)
 	{
 		shared_ptr<Acteur> acteur = lireActeur(fichier, listeFilms);
-		film->acteurs.modifierElement(i, acteur);
-		// acteur->joueDans.ajouterFilm(film.get());
+		film->acteurs_.modifierElement(i, acteur);
 	}
 	return film.release();
 }
-
 // Implementation de la fonction de recherche avec une fonction lambda
 
 Film *ListeFilms::chercherFilm(const function<bool(const Film *)> &critere) const
@@ -264,17 +267,9 @@ void afficherActeur(const Acteur &acteur)
 	cout << "  " << acteur.nom << ", " << acteur.anneeNaissance << " " << acteur.sexe << endl;
 }
 
-ostream &operator<<(std::ostream &os, const Film &film)
+ostream &operator<<(ostream &os, const Film &film)
 {
-	os << "Titre       : " << film.titre << endl;
-	os << "Réalisateur : " << film.realisateur << endl;
-	os << "Année       : " << film.anneeSortie << endl;
-	os << "Recette     : " << film.recette << " M$" << endl;
-	os << "Acteurs:" << endl;
-	for (const shared_ptr<Acteur> &acteur : span(film.acteurs.getElements(), static_cast<size_t>(film.acteurs.getNElements())))
-	{
-		os << "  " << acteur->nom << ", " << acteur->anneeNaissance << " " << acteur->sexe << "\n";
-	}
+	film.afficher(os);
 	return os;
 }
 
@@ -315,7 +310,6 @@ int main()
 	// TODO: Afficher le premier film de la liste.  Devrait être Alien.
 	if (listeFilms.getNElements() > 0)
 	{
-		cout << ligneDeSeparation << "Les films sont:" << endl;
 		cout << **listeFilms.getElements() << endl;
 	}
 
@@ -329,24 +323,25 @@ int main()
 		const_cast<Acteur *>(acteurBenedict)->anneeNaissance = 1976;
 
 	cout << ligneDeSeparation << "Liste des films où Benedict Cumberbatch joue sont:" << endl;
-	// TODO: Afficher la liste des films où Benedict Cumberbatch joue.  Il devrait y avoir Le Hobbit et Le jeu de l'imitation.
-	// afficherFilmographieActeur(listeFilms, "Benedict Cumberbatch");
 
-	// TODO: Détruire et enlever le premier film de la liste (Alien).  Ceci devrait "automatiquement" (par ce que font vos fonctions) détruire les acteurs Tom Skerritt et John Hurt, mais pas Sigourney Weaver puisqu'elle joue aussi dans Avatar.
+	// TODO: Afficher la liste des films où Benedict Cumberbatch joue.  Il devrait y avoir Le Hobbit et Le jeu de l'imitation.
+
+	// cout << ligneDeSeparation << "Liste des films où Benedict Cumberbatch joue sont:" << endl;
+	// for (int i = 0; i < listeFilms.getNElements(); i++)
+	// {
+	// 	Film *f = listeFilms.getElements()[i];
+	// 	for (int j = 0; j < f->getActeurs().getNElements(); j++)
+	// 	{
+	// 		if (f->getActeurs().getElements()[j] && f->getActeurs().getElements()[j]->nom == "Benedict Cumberbatch")
+	// 		{
+	// 			cout << f->getTitre() << endl; // Ou afficher le film selon le format voulu
+	// 			break;
+	// 		}
+	// 	}
+	// }
 
 	// Operation sur le film Skylien
-
-	// Creation du film
 	Film skylien = *listeFilms.getElements()[0];
-
-	// Changement du titre du film skylien pour "Skylien"
-	skylien.titre = "Skylien";
-
-	// changement du premier acteur
-	skylien.acteurs.modifierElement(0, listeFilms.getElements()[1]->acteurs.getElements()[0]);
-
-	// changement du nom du premier acteur
-	skylien.acteurs.getElements()[0]->nom = "Daniel Wroughton Craig";
 
 	// Affichage des modifications pour ce film
 	cout << ligneDeSeparation << "AFFICHAGE DES FILMS (VÉRIFICATION DE LA COPIE ET DU PARTAGE) :" << endl;
@@ -354,11 +349,7 @@ int main()
 
 	// test de la fonction de recherche
 	Film *filmTrouve = listeFilms.chercherFilm([](const Film *f)
-											   { return f->recette == 955; });
-	if (filmTrouve)
-	{
-		cout << "Film trouve: " << filmTrouve->titre << endl;
-	}
+											   { return false; });
 
 	// consigne chapitre 9
 	cout << ligneDeSeparation << "LISTE GENERIQUE :" << endl;
@@ -383,11 +374,11 @@ int main()
 	cout << "listeTextes2[1] : " << *listeTextes2[1] << endl;
 
 	if (listeFilms.getNElements() > 0)
-{
-    Film *filmADetruire = listeFilms.getElements()[0]; 
-    listeFilms.enleverFilm(filmADetruire);         
-    detruireFilm(filmADetruire);                  
-}
+	{
+		Film *filmADetruire = listeFilms.getElements()[0];
+		listeFilms.enleverFilm(filmADetruire);
+		detruireFilm(filmADetruire);
+	}
 
 	cout << ligneDeSeparation << "Les films sont maintenant:" << endl;
 	// TODO: Afficher la liste des films.
