@@ -3,7 +3,7 @@
  * \author   Aloys Russel Tonfo & Mohamed Elbahrawy
  * \date     26 mai 2026
  * \version  1.0
- * \brief    Déclarations des structures de données (Film, Acteur, Liste) pour le TP3.
+ * \brief    Déclarations des structures de données (Film, Acteur, Liste) pour le TP4.
  * Développé le 19-05-2026.
  */
 
@@ -28,8 +28,8 @@ struct Acteur
     std::string nom;
     int anneeNaissance = 0;
     char sexe = '\0';
-    // ListeFilms joueDans;
 };
+
 
 template <typename T>
 class Liste
@@ -102,6 +102,9 @@ public:
 
     virtual ~Item() = default;
 
+    string getTitre() const { return titre_; }
+    int getAnnee() const { return annee_; }
+
     virtual void afficher(ostream &os) const
     {
         os << "Titre: " << titre_ << " | Année: " << annee_;
@@ -132,9 +135,8 @@ public:
 
     void afficher(ostream &os) const override
     {
-
         Item::afficher(os);
-        os << "\nRéalisateur : " << realisateur_ << "\n" // Ajout du \n au début
+        os << "\nRéalisateur : " << realisateur_ << "\n"
            << "Recette     : " << recette_ << " M$\n"
            << "Acteurs:\n";
         for (size_t i = 0; i < static_cast<size_t>(acteurs_.getNElements()); ++i)
@@ -148,19 +150,16 @@ public:
         }
     }
 
-    // Accesseurs pour conserver le fonctionnement du code dans mon cpp
     ListeActeurs &getActeurs() { return acteurs_; }
     const ListeActeurs &getActeurs() const { return acteurs_; }
 
     friend Film *lireFilm(istream &fichier, ListeFilms &listeFilms);
     friend shared_ptr<Acteur> lireActeur(istream &fichier, ListeFilms &listeFilms);
     friend const Acteur *trouverActeur(const ListeFilms &listeFilms, const string &nomActeur);
-    friend ostream &operator<<(ostream &os, const Film &film);
 };
 
 class ListeFilms
 {
-
 private:
     int capacite_, nElements_;
     Film **elements_;
@@ -202,14 +201,32 @@ public:
     Livre(const string &titre, int annee, const string &auteur, int copiesVendues, int nPages)
         : Item(titre, annee), auteur_(auteur), copiesVendues_(copiesVendues), nPages_(nPages) {}
 
-    // Redéfinition de la méthode afficher pour les Livres
     void afficher(ostream &os) const override
     {
         Item::afficher(os);
-        os << "Auteur      : " << auteur_ << "\n"
+        os << "\nAuteur      : " << auteur_ << "\n"
            << "Vendues     : " << copiesVendues_ << " millions de copies\n"
            << "Pages       : " << nPages_ << "\n";
     }
 
     friend void lireLivres(const string &nomFichier);
+};
+
+class FilmLivre : public Film, public Livre
+{
+public:
+    FilmLivre() = default;
+
+    FilmLivre(const Film &film, const Livre &livre)
+        : Item(film.getTitre(), film.getAnnee()),
+          Film(film),
+          Livre(livre)
+    {
+    }
+
+    void afficher(ostream &os) const override
+    {
+        Film::afficher(os);
+        Livre::afficher(os);
+    }
 };
