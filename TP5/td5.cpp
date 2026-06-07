@@ -386,6 +386,66 @@ int main()
     // TODO: Afficher la liste des films.
     afficherListeItems(bibliotheque);
 
+    // Question 1.1 : Copie du vecteur vers une forward_list en préservant l'ordre
+    forward_list<Item*> listeLiee(bibliotheque.begin(), bibliotheque.end());
+
+    // Question 1.2 : Copier la liste à l'envers en O(n) à l'aide de push_front
+    forward_list<Item*> listeInverse;
+    for (const auto& item : listeLiee)
+    {
+        listeInverse.push_front(item);
+    }
+
+    // Question 1.3 : Copier la liste dans le même ordre en O(n) via insert_after
+    forward_list<Item*> listeMemeOrdre;
+    if (!listeLiee.empty())
+    {
+        listeMemeOrdre.push_front(listeLiee.front());
+        auto itDernier = listeMemeOrdre.begin();
+        auto itOriginal = listeLiee.begin();
+        itOriginal++; 
+        while (itOriginal != listeLiee.end())
+        {
+            itDernier = listeMemeOrdre.insert_after(itDernier, *itOriginal);
+            itOriginal++;
+        }
+    }
+
+    // Question 1.4 : Copier la liste à l'envers dans un vector en O(n)
+    // Complexité : O(n) temporel car le parcours de la liste et l'inversion du vecteur 
+    // se font tous deux en temps linéaire par rapport au nombre d'éléments.
+    vector<Item*> vecteurInverse;
+    for (const auto& item : listeLiee)
+    {
+        vecteurInverse.push_back(item);
+    }
+    if (!vecteurInverse.empty())
+    {
+        size_t gauche = 0;
+        size_t droite = vecteurInverse.size() - 1;
+        while (gauche < droite)
+        {
+            swap(vecteurInverse[gauche], vecteurInverse[droite]);
+            gauche++;
+            droite--;
+        }
+    }
+    
+    // Question 1.5 : Implementation du code d'itterateur pour notre type liste 
+    
+    // index 0
+    const Film& premierFilm = *listeFilms.getElements()[0];
+
+    for (auto&& acteur : premierFilm.getActeurs())
+    {
+        if (acteur != nullptr)
+        {
+            cout << "  " << acteur->nom << endl;
+        }
+    }
+
+    
+
     // TODO: Faire les appels qui manquent pour avoir 0% de lignes non exécutées dans le programme (aucune ligne rouge dans la couverture de code; c'est normal que les lignes de "new" et "delete" soient jaunes).  Vous avez aussi le droit d'effacer les lignes du programmes qui ne sont pas exécutée, si finalement vous pensez qu'elle ne sont pas utiles.
     if (filmTrouve != nullptr) {
         filmTrouve = nullptr;
