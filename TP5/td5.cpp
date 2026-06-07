@@ -19,6 +19,9 @@
 #include <algorithm>
 #include <vector>
 #include <iomanip>
+#include <forward_list> 
+#include <map>          
+#include <set>          
 
 #include "cppitertools/range.hpp"
 #include "gsl/span"
@@ -62,7 +65,6 @@ size_t lireUintTailleVariable(istream &fichier)
     }
 }
 
-// Fonction originale du professeur conservée intacte sans modification
 string lireString(istream &fichier)
 {
     string texte;
@@ -196,8 +198,6 @@ Film *ListeFilms::chercherFilm(const function<bool(const Film *)> &critere) cons
     return nullptr;
 }
 
-// Surcharge redondante enlevée ici pour éliminer l'erreur de liaison (undefined reference)
-
 ListeFilms creerListe(string nomFichier)
 {
     ifstream fichier(nomFichier, ios::binary);
@@ -257,7 +257,25 @@ void afficherBibliotheque(const vector<Item*> &bibliotheque)
     {
         if (item != nullptr)
         {
-            cout << *item << endl; // Fait un appel polymorphique direct via la base Item
+            cout << *item << endl;
+            cout << ligneDeSeparation;
+        }
+    }
+}
+
+//Fonction d'affichage d'une liste d"item
+
+template <typename Conteneur>
+void afficherListeItems(const Conteneur& conteneur)
+{
+    static const string ligneDeSeparation = "\n\033[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n";
+    cout << ligneDeSeparation;
+    for (const auto& item : conteneur)
+    {
+        if (item != nullptr)
+        {
+            item->afficherCourt(cout);
+            cout << endl;
             cout << ligneDeSeparation;
         }
     }
@@ -366,7 +384,7 @@ int main()
 
     cout << ligneDeSeparation << "Les films sont maintenant:" << endl;
     // TODO: Afficher la liste des films.
-    afficherBibliotheque(bibliotheque);
+    afficherListeItems(bibliotheque);
 
     // TODO: Faire les appels qui manquent pour avoir 0% de lignes non exécutées dans le programme (aucune ligne rouge dans la couverture de code; c'est normal que les lignes de "new" et "delete" soient jaunes).  Vous avez aussi le droit d'effacer les lignes du programmes qui ne sont pas exécutée, si finalement vous pensez qu'elle ne sont pas utiles.
     if (filmTrouve != nullptr) {

@@ -4,7 +4,6 @@
  * \date     26 mai 2026
  * \version  1.0
  * \brief    Déclarations des structures de données (Film, Acteur, Liste) pour le TP4.
- * Développé le 19-05-2026.
  */
 
 #pragma once
@@ -13,15 +12,10 @@
 #include <memory>
 #include <functional>
 
-using namespace std;
-
 class Item;
 class Film;
 class Livre;
 class ListeFilms;
-
-struct Film;
-struct Acteur; // Permet d'utiliser les types alors qu'ils seront défini après.
 
 struct Acteur
 {
@@ -30,14 +24,13 @@ struct Acteur
     char sexe = '\0';
 };
 
-
 template <typename T>
 class Liste
 {
 private:
     int capacite = 0;
     int nElements = 0;
-    std::unique_ptr<shared_ptr<T>[]> elements;
+    std::unique_ptr<std::shared_ptr<T>[]> elements;
 
 public:
     Liste() = default;
@@ -57,14 +50,19 @@ public:
     int getCapacite() const { return capacite; }
     int getNElements() const { return nElements; }
 
-    shared_ptr<T> *getElements() { return elements.get(); }
-    const shared_ptr<T> *getElements() const { return elements.get(); }
+    std::shared_ptr<T> *getElements() { return elements.get(); }
+    const std::shared_ptr<T> *getElements() const { return elements.get(); }
+
+    std::shared_ptr<T> *begin() { return elements.get(); }
+    std::shared_ptr<T> *end() { return elements.get() + nElements; }
+    const std::shared_ptr<T> *begin() const { return elements.get(); }
+    const std::shared_ptr<T> *end() const { return elements.get() + nElements; }
 
     void initialiser(int cap)
     {
         capacite = cap;
         nElements = cap;
-        elements = make_unique<shared_ptr<T>[]>(static_cast<size_t>(cap));
+        elements = std::make_unique<std::shared_ptr<T>[]>(static_cast<size_t>(cap));
     }
 
     void modifierElement(size_t index, const std::shared_ptr<T> &element)
@@ -78,7 +76,7 @@ public:
             }
         }
     }
-    shared_ptr<T> &operator[](size_t index)
+    std::shared_ptr<T> &operator[](size_t index)
     {
         return elements[index];
     }
@@ -92,30 +90,34 @@ using ListeActeurs = Liste<Acteur>;
 
 class Item
 {
-protected:
-    string titre_;
+public:
+    std::string titre_;
     int annee_;
 
-public:
     Item() : titre_(""), annee_(0) {}
-    Item(const string &titre, int annee) : titre_(titre), annee_(annee) {}
+    Item(const std::string &titre, int annee) : titre_(titre), annee_(annee) {}
 
     virtual ~Item() = default;
 
-    string getTitre() const { return titre_; }
+    std::string getTitre() const { return titre_; }
     int getAnnee() const { return annee_; }
 
-    virtual void afficher(ostream &os) const
+    virtual void afficher(std::ostream &os) const
     {
         os << "Titre: " << titre_ << " | Année: " << annee_;
     }
 
-    friend Film *lireFilm(istream &fichier, ListeFilms &listeFilms);
-    friend shared_ptr<Acteur> lireActeur(istream &fichier, ListeFilms &listeFilms);
-    friend const Acteur *trouverActeur(const ListeFilms &listeFilms, const string &nomActeur);
+    virtual void afficherCourt(std::ostream &os) const
+    {
+        os << titre_;
+    }
+
+    friend Film *lireFilm(std::istream &fichier, ListeFilms &listeFilms);
+    friend std::shared_ptr<Acteur> lireActeur(std::istream &fichier, ListeFilms &listeFilms);
+    friend const Acteur *trouverActeur(const ListeFilms &listeFilms, const std::string &nomActeur);
 };
 
-inline ostream &operator<<(std::ostream &os, const Item &item)
+inline std::ostream &operator<<(std::ostream &os, const Item &item)
 {
     item.afficher(os);
     return os;
@@ -123,17 +125,16 @@ inline ostream &operator<<(std::ostream &os, const Item &item)
 
 class Film : virtual public Item
 {
-private:
-    string realisateur_;
+public:
+    std::string realisateur_;
     int recette_ = 0;
     ListeActeurs acteurs_;
 
-public:
     Film() : Item(), realisateur_(""), recette_(0) {}
-    Film(const string &titre, int annee, const string &realisateur, int recette)
+    Film(const std::string &titre, int annee, const std::string &realisateur, int recette)
         : Item(titre, annee), realisateur_(realisateur), recette_(recette) {}
 
-    void afficher(ostream &os) const override
+    void afficher(std::ostream &os) const override
     {
         Item::afficher(os);
         os << "\nRéalisateur : " << realisateur_ << "\n"
@@ -150,12 +151,17 @@ public:
         }
     }
 
+    void afficherCourt(std::ostream &os) const override
+    {
+        os << titre_ << ", par " << realisateur_;
+    }
+
     ListeActeurs &getActeurs() { return acteurs_; }
     const ListeActeurs &getActeurs() const { return acteurs_; }
 
-    friend Film *lireFilm(istream &fichier, ListeFilms &listeFilms);
-    friend shared_ptr<Acteur> lireActeur(istream &fichier, ListeFilms &listeFilms);
-    friend const Acteur *trouverActeur(const ListeFilms &listeFilms, const string &nomActeur);
+    friend Film *lireFilm(std::istream &fichier, ListeFilms &listeFilms);
+    friend std::shared_ptr<Acteur> lireActeur(std::istream &fichier, ListeFilms &listeFilms);
+    friend const Acteur *trouverActeur(const ListeFilms &listeFilms, const std::string &nomActeur);
 };
 
 class ListeFilms
@@ -176,7 +182,7 @@ public:
     int getNElements() const { return nElements_; }
     Film **getElements() const { return elements_; }
 
-    Film *chercherFilm(const function<bool(const Film *)> &critere) const;
+    Film *chercherFilm(const std::function<bool(const Film *)> &critere) const;
 
     void ajouterFilm(Film *film);
     void enleverFilm(const Film *film);
@@ -191,17 +197,16 @@ public:
 
 class Livre : virtual public Item
 {
-private:
-    string auteur_;
+public:
+    std::string auteur_;
     int copiesVendues_;
     int nPages_;
 
-public:
     Livre() : Item(), auteur_(""), copiesVendues_(0), nPages_(0) {}
-    Livre(const string &titre, int annee, const string &auteur, int copiesVendues, int nPages)
+    Livre(const std::string &titre, int annee, const std::string &auteur, int copiesVendues, int nPages)
         : Item(titre, annee), auteur_(auteur), copiesVendues_(copiesVendues), nPages_(nPages) {}
 
-    void afficher(ostream &os) const override
+    void afficher(std::ostream &os) const override
     {
         Item::afficher(os);
         os << "\nAuteur      : " << auteur_ << "\n"
@@ -209,7 +214,12 @@ public:
            << "Pages       : " << nPages_ << "\n";
     }
 
-    friend void lireLivres(const string &nomFichier);
+    void afficherCourt(std::ostream &os) const override
+    {
+        os << titre_ << ", de " << auteur_;
+    }
+
+    friend void lireLivres(const std::string &nomFichier);
 };
 
 class FilmLivre : public Film, public Livre
@@ -224,9 +234,14 @@ public:
     {
     }
 
-    void afficher(ostream &os) const override
+    void afficher(std::ostream &os) const override
     {
         Film::afficher(os);
         Livre::afficher(os);
+    }
+
+    void afficherCourt(std::ostream &os) const override
+    {
+        os << titre_ << ", par " << realisateur_ << ", de " << auteur_;
     }
 };
