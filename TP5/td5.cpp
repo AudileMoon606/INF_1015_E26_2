@@ -350,6 +350,22 @@ int main()
     cout << "listeTextes2[0] : " << *listeTextes2[0] << endl;
     cout << "listeTextes2[1] : " << *listeTextes2[1] << endl;
 
+    // Question 1.5 : Implementation du code d'itterateur pour notre type liste 
+    
+    // index 0
+    if (listeFilms.getNElements() > 0)
+    {
+        const Film& premierFilm = *listeFilms.getElements()[0];
+
+        for (auto&& acteur : premierFilm.getActeurs())
+        {
+            if (acteur != nullptr)
+            {
+                cout << "  " << acteur->nom << endl;
+            }
+        }
+    }
+
     if (listeFilms.getNElements() > 0)
     {
         Film *filmADetruire = listeFilms.getElements()[0];
@@ -430,21 +446,44 @@ int main()
             droite--;
         }
     }
-    
-    // Question 1.5 : Implementation du code d'itterateur pour notre type liste 
-    
-    // index 0
-    const Film& premierFilm = *listeFilms.getElements()[0];
 
-    for (auto&& acteur : premierFilm.getActeurs())
+    // Question 2.1 : Utilisation d'un std::set 
+    auto comparateurItem = [](const Item* a, const Item* b) {
+        return a->getTitre() < b->getTitre();
+    };
+    
+    set<Item*, decltype(comparateurItem)> bibliothequeTrie(comparateurItem);
+    for (const auto& item : bibliotheque)
     {
-        if (acteur != nullptr)
+        bibliothequeTrie.insert(item);
+    }
+    cout << ligneDeSeparation << "Bibliothèque en ordre alphabétique (Question 2.1) :" << endl;
+    afficherListeItems(bibliothequeTrie);
+
+    // Question 2.2 : Utilisation d'un std::unordered_map pour une recherche en O(1) en moyenne
+    unordered_map<string, Item*> tableBibliotheque;
+    for (const auto& item : bibliotheque)
+    {
+        if (item != nullptr)
         {
-            cout << "  " << acteur->nom << endl;
+            tableBibliotheque[item->getTitre()] = item;
         }
     }
 
-    
+    // Test de la Recherche sur  l'item "The Hobbit" 
+    cout << ligneDeSeparation << "Recherche et affichage de 'The Hobbit' (Question 2.2) :" << endl;
+    auto itTrouve = tableBibliotheque.find("The Hobbit");
+
+    if (itTrouve != tableBibliotheque.end())
+    {
+        // On récupère le pointeur d'Item associé à la clé
+        Item* itemHobbit = itTrouve->second;
+        if (itemHobbit != nullptr)
+        {
+            itemHobbit->afficher(cout);
+            cout << endl;
+        }
+    }
 
     // TODO: Faire les appels qui manquent pour avoir 0% de lignes non exécutées dans le programme (aucune ligne rouge dans la couverture de code; c'est normal que les lignes de "new" et "delete" soient jaunes).  Vous avez aussi le droit d'effacer les lignes du programmes qui ne sont pas exécutée, si finalement vous pensez qu'elle ne sont pas utiles.
     if (filmTrouve != nullptr) {
