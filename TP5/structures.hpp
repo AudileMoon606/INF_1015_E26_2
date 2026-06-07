@@ -219,7 +219,7 @@ public:
         os << titre_ << ", de " << auteur_;
     }
 
-    friend void lireLivres(const std::string &nomFichier);
+    void lireLivres(const std::string &nomFichier);
 };
 
 class FilmLivre : public Film, public Livre

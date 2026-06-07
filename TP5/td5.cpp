@@ -21,7 +21,8 @@
 #include <iomanip>
 #include <forward_list> 
 #include <map>          
-#include <set>          
+#include <set>    
+#include <numeric>      
 
 #include "cppitertools/range.hpp"
 #include "gsl/span"
@@ -484,6 +485,18 @@ int main()
             cout << endl;
         }
     }
+
+    // Question 3.1 : Copier les items qui "sont des" Film de listeLiee vers un vector en une ligne
+    vector<Item*> uniquementFilms;
+    
+    copy_if(listeLiee.begin(), listeLiee.end(), back_inserter(uniquementFilms), [](Item* item) { return dynamic_cast<Film*>(item) != nullptr; });
+
+    cout << ligneDeSeparation << "Uniquement les films de la liste liée (Question 3.1) :" << endl;
+    afficherListeItems(uniquementFilms);
+
+    // Question 3.2 : Somme des recettes des films en une seule ligne avec std::accumulate
+    int sommeRecettes = accumulate(uniquementFilms.begin(), uniquementFilms.end(), 0, [](int sommeActuelle, Item* item) { return sommeActuelle + dynamic_cast<Film*>(item)->recette_; });
+    cout << ligneDeSeparation << "La somme des recettes de tous les films est de : " << sommeRecettes << " M$" << endl;
 
     // TODO: Faire les appels qui manquent pour avoir 0% de lignes non exécutées dans le programme (aucune ligne rouge dans la couverture de code; c'est normal que les lignes de "new" et "delete" soient jaunes).  Vous avez aussi le droit d'effacer les lignes du programmes qui ne sont pas exécutée, si finalement vous pensez qu'elle ne sont pas utiles.
     if (filmTrouve != nullptr) {
